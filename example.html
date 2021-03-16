@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="Observe element size changes and callback before and after layout reflow has occured.">
+    <title> Reflow Observer Example </title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { height: 100vh; margin: 0; }
+      body { padding: 1rem; font-family: sans-serif; background: grey; }
+      body:fullscreen { background: orange;}
+      body:fullscreen::backdrop { background: transparent; }
+      h1 { margin: 0 0 1rem 0; }
+      button#toggle { margin: 1rem; }
+    </style>
+  </head>
+  <body>
+    <h1> Reflow Observer Example </h1>
+    <p>
+      Click the button below to toggle between fullscreen states.
+      Check the JS Console for corresponding output.
+    </p>
+    <button id="toggle"> Toggle Fullscreen </button>
+    <label> <input type="checkbox" id="debug"> DEBUG MODE * </label>
+    <p> * Enable DEBUG MODE to pause executiion at key points. </p>
+    <script type="module">
+      // IMPORT THE CUSTOM OBSERVER CLASS
+      import { ReflowObserver } from './ReflowObserver.js';
+      
+      // SPECIFY THE NODE WHICH WILL CHANGE SIZE
+      let resizableNode = document.body;
+
+      // HERE WE SETUP THE OBSERVER TO WATCH FOR CHANGES TO OUR SPECIFIED NODE
+      // THE CALLBACKS ARE PASSED ONE PARAMETER IN THE FORM OF A DOMHighResTimeStamp
+      // THE KEYWORD this WHEN REFERENCED INSIDE THE CALLBACKS WILL REFER TO THE OBSERVED NODE
+      const observer = new ReflowObserver(beforeReflow, afterReflow);
+      observer.observe(resizableNode);
+
+      // DO SOMETHING BEFORE REFLOW
+      function beforeReflow(timestamp) {
+        // AT THIS POINT THE DOM CHANGES HAVE BEEN MADE AND ANY
+        // QUERIES AGAINST THE ELEMENT WILL RETURN THE NEW PROPERTIES
+        // SOME STYLES MAY HAVE ALREADY BEEN APPLIED (COLOR CHANGES, ETC)
+        // BUT THE LAYOUT SHIFT HAS NOT ACTUALLY OCCURED YET, FOR EXAMPLE :
+        let height = this.getBoundingClientRect().height;
+        // RETURNS THE POST-REFLOW HEIGHT... AND :
+        let bgcolor = window.getComputedStyle(this).getPropertyValue('background-color');
+        // RETURNS THE POST-REFLOW BG COLOR...
+        // SO MAKE ANY LAST MOMENT DOM/STYLE CHANGES HERE
+        console.log(timestamp, 'about to reflow', this, { height, bgcolor });
+
+        // PAUSE EXECUTION BEFORE REFLOW
+        if (debug === true) { debugger; }
+      }
+
+      // DO SOMETHING AFTER REFLOW
+      function afterReflow(timestamp) {
+        // NOW THE REFLOW HAS ACTUALLY COMPLETED ON SCREEN
+        // AND YOU CAN DO WHATEVER YOU NEEDED TO DO
+        // THAT REQUIRED YOU TO SEARCH OUT THIS LIBRARY
+        console.log(timestamp, 'reflow complete', this);
+
+        // PAUSE EXECUTION AFTER REFLOW
+        if (debug === true) { debugger; }
+      }
+
+
+      // CHECK DEBUG STATUS, WILL PAUSE EXECUTION AT KEY POINTS IF ENABLED
+      // USEFUL ONLY FOR DEMONSTRATION PURPOSES
+      let debugControl = document.getElementById('debug');   
+      let debug = getDebugState();
+      
+      function getDebugState() {
+        return (debugControl.checked) ? true : false;
+      }
+      
+      debugControl.addEventListener('change', event => {
+        debug = getDebugState();
+      });
+
+      // TRIGGER A REFLOW BY GOING FULLSCREEN ON THE SPECIFIED NODE
+      function toggleFullscreen(element) {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          element.requestFullscreen();
+        }
+      }
+
+      // ATTACH REFLOW TRIGGER TO USER INPUT
+      const trigger = document.getElementById('toggle');
+      trigger.addEventListener('click', event => {
+        toggleFullscreen(resizableNode);
+      });
+      
+      // OBSERVE AS MANY NODES AS YOU NEED
+      observer.observe(trigger);
+      
+      // LIST OBSERVED NODES
+      console.log('observed nodes', observer.observed);
+      
+      // STOP OBSERVING NODES THAT YOU NO LONGER NEED TO KEEP TRACK OF
+      observer.unobserve(trigger);
+      
+      window.addEventListener('beforeunload', event => {
+        // UNOBSERVE ALL NODES (IN CASE YOU EVER NEED TO)
+        observer.disconnect();
+      });
+    </script>
+  </body>
+</html>
