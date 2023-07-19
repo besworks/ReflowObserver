@@ -23,7 +23,7 @@ const observer = new ReflowObserver(
   function afterReflow(timestamp) { console.log(timestamp, 'reflow complete', this); }
 );
 
-observer.observe(doument.body);
+observer.observe(document.body);
 ```
 
 A well commented example implementation is contained in this repository. Find it at `./example.html`.
