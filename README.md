@@ -2,7 +2,7 @@
 Observe element size changes and callback before and after layout reflow has occured.
 
 ## API
-`ReflowObserver` wraps around [`ResizeObserver`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver). It provides the same basic interface as with a few subtle differences, listed below.
+`ReflowObserver` wraps around [`ResizeObserver`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver). It provides the same basic interface with a few subtle differences, listed below.
 
 ### Constructor Differences
 `ResizeObserver` takes a callback as it's only argument.  
@@ -23,7 +23,7 @@ const observer = new ReflowObserver(
   function afterReflow(timestamp) { console.log(timestamp, 'reflow complete', this); }
 );
 
-observer.observe(doument.body);
+observer.observe(document.body);
 ```
 
 A well commented example implementation is contained in this repository. Find it at `./example.html`.
