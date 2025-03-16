@@ -102,7 +102,7 @@
       // STOP OBSERVING NODES THAT YOU NO LONGER NEED TO KEEP TRACK OF
       observer.unobserve(trigger);
       
-      window.addEventListener('beforeunload', event => {
+      window.addEventListener('pagehide', event => {
         // UNOBSERVE ALL NODES (IN CASE YOU EVER NEED TO)
         observer.disconnect();
       });
